@@ -1,0 +1,31 @@
+ALTER TABLE surv_ice_seals_2025.tbl_images
+ADD COLUMN image_group INT;
+
+ALTER TABLE surv_ice_seals_2025.geo_images_footprint
+ADD COLUMN image_group INT;
+
+ALTER TABLE surv_ice_seals_2025.geo_images_meta
+ADD COLUMN image_group INT;
+
+
+UPDATE surv_ice_seals_2025.tbl_images i
+SET image_group = id
+FROM (SELECT flight, camera_view, dt, dense_rank() over (order by flight, camera_view, dt) id
+FROM surv_ice_seals_2025.tbl_images) id
+WHERE i.flight = id.flight
+AND i.camera_view = id.camera_view
+AND i.dt = id.dt;
+
+UPDATE surv_ice_seals_2025.geo_images_footprint i
+SET image_group = id.image_group
+FROM (SELECT image_name, image_group
+FROM surv_ice_seals_2025.tbl_images) id
+WHERE i.image_name = id.image_name;
+
+UPDATE surv_ice_seals_2025.geo_images_meta i
+SET image_group = id.image_group
+FROM (SELECT flight, camera_view, dt, image_group
+FROM surv_ice_seals_2025.tbl_images) id
+WHERE i.flight = id.flight
+AND i.camera_view = id.camera_view
+AND i.dt = id.dt;
