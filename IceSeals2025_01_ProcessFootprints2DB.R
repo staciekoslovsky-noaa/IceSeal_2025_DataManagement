@@ -38,8 +38,15 @@ for (j in 1:nrow(dir)) {
   shps <- list.files(path = dir$path[j], pattern = "shp", full.names = TRUE)
   
   for (i in 1:length(shps)) {
-    next_id <- RPostgreSQL::dbGetQuery(con, "SELECT max(id) FROM surv_ice_seals_2025.geo_images_footprint")
-    next_id$max <- ifelse(length(which(!is.na(next_id$max))) == 0, 1, next_id$max + 1)
+    result <- RPostgreSQL::dbGetQuery(con, 'SELECT EXISTS (
+                                              SELECT FROM information_schema.tables
+                                              WHERE  table_schema = \'surv_ice_seals_2025\'
+                                              AND    table_name   = \'geo_images_footprint\')')
+    if (result$exists == 'true') {
+      next_id <- RPostgreSQL::dbGetQuery(con, "SELECT max(id) FROM surv_ice_seals_2025.geo_images_footprint") %>%
+        mutate(next_id = next_id$max + 1)
+    } else
+        {next_id <- data.frame(max = 1)}
     
     shape <- sf::st_read(shps[i])
     

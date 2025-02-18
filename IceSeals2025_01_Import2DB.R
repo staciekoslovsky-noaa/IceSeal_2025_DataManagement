@@ -119,12 +119,12 @@ df <- list(images2DB, meta2DB)
 dat <- c("tbl_images", "geo_images_meta")
 
 # Identify and delete dependencies for each table
-for (i in 1:length(dat)){
-  sql <- paste("SELECT fxn_deps_save_and_drop_dependencies(\'surv_ice_seals_2025', \'", dat[i], "\')", sep = "")
-  RPostgreSQL::dbSendQuery(con, sql)
-  RPostgreSQL::dbClearResult(dbListResults(con)[[1]])
-}
-RPostgreSQL::dbSendQuery(con, "DELETE FROM deps_saved_ddl WHERE deps_ddl_to_run NOT LIKE \'%CREATE VIEW%\'")
+# for (i in 1:length(dat)){
+#   sql <- paste("SELECT fxn_deps_save_and_drop_dependencies(\'surv_ice_seals_2025', \'", dat[i], "\')", sep = "")
+#   RPostgreSQL::dbSendQuery(con, sql)
+#   RPostgreSQL::dbClearResult(dbListResults(con)[[1]])
+# }
+# RPostgreSQL::dbSendQuery(con, "DELETE FROM deps_saved_ddl WHERE deps_ddl_to_run NOT LIKE \'%CREATE VIEW%\'")
 
 # Push data to pepgeo database and process data to spatial datasets where appropriate
 for (i in 1:length(dat)){
@@ -138,11 +138,11 @@ for (i in 1:length(dat)){
 }
 
 # Recreate table dependencies
-for (i in length(dat):1) {
-  sql <- paste("SELECT fxn_deps_restore_dependencies(\'surv_ice_seals_2025\', \'", dat[i], "\')", sep = "")
-  RPostgreSQL::dbSendQuery(con, sql)
-  RPostgreSQL::dbClearResult(dbListResults(con)[[1]])
-}
+# for (i in length(dat):1) {
+#   sql <- paste("SELECT fxn_deps_restore_dependencies(\'surv_ice_seals_2025\', \'", dat[i], "\')", sep = "")
+#   RPostgreSQL::dbSendQuery(con, sql)
+#   RPostgreSQL::dbClearResult(dbListResults(con)[[1]])
+# }
 
 # Disconnect for database and delete unnecessary variables ----------------------------
 RPostgreSQL::dbDisconnect(con)
