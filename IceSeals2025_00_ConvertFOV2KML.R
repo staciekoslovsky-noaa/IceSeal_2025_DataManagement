@@ -2,8 +2,8 @@
 # S. Koslovsky, 22 April 2025
 
 # Set variables
-flight_num <- 'fl211'
-flight_folder <- 'ice_seals_2025_fl211'
+flight_num <- 'fl115'
+flight_folder <- 'ice_seals_2025_fl115'
 
 # Load packages
 install_pkg <- function(x)
