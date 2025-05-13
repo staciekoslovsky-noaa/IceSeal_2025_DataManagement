@@ -2,8 +2,9 @@
 # S. Koslovsky, 22 April 2025
 
 # Set variables
-flight_num <- 'fl115'
-flight_folder <- 'ice_seals_2025_fl115'
+flight_num <- 'fl127'
+flight_folder <- 'ice_seals_2025_fl127'
+date <- '0511'
 
 # Load packages
 install_pkg <- function(x)
@@ -43,4 +44,4 @@ fov2kml <- fov %>%
   left_join(effort2line, by = "line_id") %>%
   filter(grepl('ON', effort)) 
 
-sf::st_write(obj = fov2kml, dsn = paste0("C:\\Users\\Stacie.Hardy\\Desktop\\ForFieldTeam\\_ForForeflight\\ice_seals_2025_", flight_num, "_onEffort.kml"))
+sf::st_write(obj = fov2kml, dsn = paste0("C:\\Users\\Stacie.Hardy\\Desktop\\ForFieldTeam\\_ForForeflight\\", date, "_", flight_num, "_onEffort.kml"))
