@@ -2,9 +2,9 @@
 # S. Koslovsky, 22 April 2025
 
 # Set variables
-flight_num <- 'fl223'
-flight_folder <- 'ice_seals_2025_fl223'
-date <- '0513'
+flight_num <- 'fl225'
+flight_folder <- 'ice_seals_2025_fl225'
+date <- '0515'
 
 # Load packages
 install_pkg <- function(x)
