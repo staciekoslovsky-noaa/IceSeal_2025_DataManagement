@@ -2,9 +2,9 @@
 # S. Koslovsky, 22 April 2025
 
 # Set variables
-flight_num <- 'fl225'
-flight_folder <- 'ice_seals_2025_fl225'
-date <- '0515'
+flight_num <- 'fl138'
+flight_folder <- 'ice_seals_2025_fl138'
+date <- '0610'
 
 # Load packages
 install_pkg <- function(x)
@@ -30,7 +30,7 @@ fov <- sf::st_read(shp) %>%
   mutate(time_diff = time - last_time)
 
 for (i in 2:nrow(fov)) {
-  fov$line_id[i] <- ifelse(fov$effort[i] == fov$effort[i-1] & fov$time_diff[i] < 30, fov$line_id[i-1], fov$line_id[i-1] + 1)
+  fov$line_id[i] <- ifelse(fov$effort[i] == fov$effort[i-1] & fov$time_diff[i] < 10, fov$line_id[i-1], fov$line_id[i-1] + 1)
 }
 
 fov <- fov %>%
