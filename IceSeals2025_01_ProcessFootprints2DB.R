@@ -1,7 +1,7 @@
 # Ice Seals 2025: Process Footprints to DB
 
 # Define variables
-wd <- "//akc0ss-n086/NMML_Polar_Imagery_3/KAMERA_2025_Test_TEMP/tiaga_testflights_2025"
+wd <- "//akc0ss-n086/NMML_Polar_Imagery_4/Surveys_IceSeals_2025"
 
 # Create functions -----------------------------------------------
 # Function to install packages needed
@@ -26,7 +26,7 @@ con <- RPostgreSQL::dbConnect(PostgreSQL(),
                               user = Sys.getenv("pep_admin"), 
                               password = Sys.getenv("admin_pw"))
 
-RPostgreSQL::dbSendQuery(con, "DELETE FROM surv_ice_seals_2025.geo_images_footprint")
+# RPostgreSQL::dbSendQuery(con, "DELETE FROM surv_ice_seals_2025.geo_images_footprint")
 
 # Read shapefiles
 dir <- list.dirs(wd, full.names = FALSE, recursive = FALSE)
@@ -34,9 +34,9 @@ dir <- data.frame(path = dir[grep("fl", dir)], stringsAsFactors = FALSE) %>%
   filter(stringr::str_starts(path, 'fl')) %>%
   mutate(path = paste(wd, "\\", path, "\\processed_results\\fov_shapefiles", sep = ""))
 
-for (j in 1:nrow(dir)) {
+for (j in 8:nrow(dir)) {
   shps <- list.files(path = dir$path[j], pattern = "shp", full.names = TRUE)
-  
+  if (length(shps) == 0) next
   for (i in 1:length(shps)) {
     result <- RPostgreSQL::dbGetQuery(con, 'SELECT EXISTS (
                                               SELECT FROM information_schema.tables

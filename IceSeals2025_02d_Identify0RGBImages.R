@@ -54,6 +54,4 @@ for (i in 1:nrow(file_details2DB)) {
 
 RPostgreSQL::dbSendQuery(con, paste0("UPDATE surv_ice_seals_2025.tbl_images SET rgb_imagezero = \'NA\' WHERE rgb_imagezero IS NULL"))
 
-
-
 RPostgreSQL::dbDisconnect(con)

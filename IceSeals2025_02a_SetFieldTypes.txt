@@ -19,7 +19,8 @@ ALTER COLUMN flight TYPE VARCHAR(10),
 ALTER COLUMN camera_view TYPE VARCHAR(10),
 ALTER COLUMN ir_nuc TYPE VARCHAR(10),
 ALTER COLUMN rgb_manualreview TYPE VARCHAR(10),
-ALTER COLUMN ml_imagestatus TYPE VARCHAR(50);
+ALTER COLUMN ml_imagestatus TYPE VARCHAR(50),
+ALTER COLUMN image_dir TYPE VARCHAR(250);
 
 ALTER TABLE surv_ice_seals_2025.geo_images_meta
 ALTER COLUMN effort_field TYPE VARCHAR(20),
@@ -28,3 +29,26 @@ ALTER COLUMN dt TYPE VARCHAR(50),
 ALTER COLUMN flight TYPE VARCHAR(10),
 ALTER COLUMN camera_view TYPE VARCHAR(10),
 ALTER COLUMN camera_model TYPE VARCHAR(50);
+
+ALTER TABLE IF EXISTS surv_ice_seals_2025.geo_images_meta
+    RENAME "rgb_Make" TO rgb_make;
+ALTER TABLE IF EXISTS surv_ice_seals_2025.geo_images_meta
+    RENAME "rgb_Model" TO rgb_model;
+ALTER TABLE IF EXISTS surv_ice_seals_2025.geo_images_meta
+    RENAME "rgb_ExposureBias" TO rgb_exposure_bias;
+ALTER TABLE IF EXISTS surv_ice_seals_2025.geo_images_meta
+    RENAME "rgb_ISO" TO rgb_iso;
+ALTER TABLE IF EXISTS surv_ice_seals_2025.geo_images_meta
+    RENAME "rgb_ApertureValue" TO rgb_aperture_value;
+ALTER TABLE IF EXISTS surv_ice_seals_2025.geo_images_meta
+    RENAME "rgb_ApertureMin" TO rgb_aperture_min;
+ALTER TABLE IF EXISTS surv_ice_seals_2025.geo_images_meta
+    RENAME "rgb_ApertureMax" TO rgb_aperture_max;
+ALTER TABLE IF EXISTS surv_ice_seals_2025.geo_images_meta
+    RENAME "rgb_ShutterSpeedValue" TO rgb_shutter_speed_salue;
+ALTER TABLE IF EXISTS surv_ice_seals_2025.geo_images_meta
+    RENAME "rgb_FNumber" TO rgb_f_number;
+ALTER TABLE IF EXISTS surv_ice_seals_2025.geo_images_meta
+    RENAME "rgb_ExposureTime_s_" TO rgb_exposure_time_s;
+ALTER TABLE IF EXISTS surv_ice_seals_2025.geo_images_meta
+    RENAME "rgb_FocalLength" TO rgb_focal_length;

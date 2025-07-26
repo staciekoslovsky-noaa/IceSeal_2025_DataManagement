@@ -2,9 +2,9 @@
 # S. Koslovsky
 
 # Set Working Variables
-wd <- "//akc0ss-n086/NMML_Polar_Imagery_3/KAMERA_2025_Test_TEMP/tiaga_testflights_2025"
-metaTemplate <- "//akc0ss-n086/NMML_Polar_Imagery_3/KAMERA_2025_Test_TEMP/tiaga_testflights_2025/Template4Import.json"
-projectPrefix <- "tiaga_flighttest"
+wd <- "//akc0ss-n086/NMML_Polar_Imagery_4/Surveys_IceSeals_2025"
+metaTemplate <- "//akc0ss-n086/NMML_Polar_Imagery_4/Surveys_IceSeals_2025/Template4Import.json"
+projectPrefix <- "ice_seals_2025"
 
 # Create functions -----------------------------------------------
 # Function to install packages needed
@@ -26,9 +26,19 @@ install_pkg("stringr")
 # Run code -------------------------------------------------------
 setwd(wd)
 
+# Connect to PostgreSQL 
+con <- RPostgreSQL::dbConnect(PostgreSQL(), 
+                              dbname = Sys.getenv("pep_db"), 
+                              host = Sys.getenv("pep_ip"), 
+                              user = Sys.getenv("pep_admin"), 
+                              password = Sys.getenv("admin_pw"))
+
+# RPostgreSQL::dbSendQuery(con, "DELETE FROM surv_ice_seals_2025.tbl_images")
+# RPostgreSQL::dbSendQuery(con, "DELETE FROM surv_ice_seals_2025.geo_images_meta")
+
 # Create list of camera folders within which data need to be processed 
 dir <- list.dirs(wd, full.names = FALSE, recursive = FALSE)
-dir <- data.frame(path = dir[grep("fl", dir)], stringsAsFactors = FALSE)
+dir <- data.frame(path = dir[grep("fl[0-9][0-9][0-9]", dir)], stringsAsFactors = FALSE)
 camera_models <- list.dirs(paste(wd, dir$path[1], sep = "/"), full.names = TRUE, recursive = FALSE)
 for (i in 2:nrow(dir)){
   temp <- list.dirs(paste(wd, dir$path[i], sep = "/"), full.names = TRUE, recursive = FALSE)
@@ -41,7 +51,6 @@ camera_models <- camera_models[!grepl("ins_raw", camera_models)]
 camera_models <- camera_models[!grepl("processed_results", camera_models)]
 camera_models <- camera_models[!grepl("detection_shapefiles", camera_models)]
 camera_models <- camera_models[!grepl("fov_shapefiles", camera_models)]
-camera_models <- camera_models[!grepl("fl09", camera_models)]
 
 camera_models <- unique(camera_models)
 image_dir <- merge(camera_models, c("left_view", "center_view", "right_view"), ALL = true)
@@ -49,24 +58,28 @@ colnames(image_dir) <- c("path", "camera_loc")
 image_dir$path <- as.character(image_dir$path)
 image_dir$camera_dir <- paste(image_dir$path, image_dir$camera_loc, sep = "/")
 
-rm(i, temp, wd)
 
-# Process images and meta.json files
-images2DB <- data.frame(image_name = as.character(""), dt = as.character(""), image_type = as.character(""), 
-                        image_dir = as.character(""), stringsAsFactors = FALSE)
-images2DB <- images2DB[which(images2DB == "test"), ]
-
-meta2DB <- data.frame(rjson::fromJSON(file = metaTemplate))
-names(meta2DB)[names(meta2DB) == "effort"] <- "effort_field"
-meta2DB$effort_reconciled <- ""
-meta2DB$meta_file <- ""
-meta2DB$dt <- ""
-meta2DB$flight <- ""
-meta2DB$camera_view <- ""
-meta2DB$camera_model <- ""
-meta2DB <- meta2DB[which(meta2DB == "test"), ]
-
-for (i in 1:nrow(image_dir)){
+# Process images and meta.json files by flight to the DB
+for (i in 141:nrow(image_dir)){
+  # Create image table
+  images2DB <- data.frame(image_name = as.character(""), dt = as.character(""), image_type = as.character(""), 
+                          image_dir = as.character(""), stringsAsFactors = FALSE)
+  images2DB <- images2DB[which(images2DB == "test"), ]
+  
+  # Create meta.json table
+  meta2DB <- data.frame(rjson::fromJSON(file = metaTemplate))
+  names(meta2DB)[names(meta2DB) == "effort"] <- "effort_field"
+  meta2DB$effort_reconciled <- ""
+  meta2DB$meta_file <- ""
+  meta2DB$dt <- ""
+  meta2DB$flight <- ""
+  meta2DB$camera_view <- ""
+  meta2DB$camera_model <- ""
+  meta2DB <- meta2DB[which(meta2DB == "test"), ]
+  
+  # Process data
+  if(image_dir$path[i] == '//akc0ss-n086/NMML_Polar_Imagery_4/Surveys_IceSeals_2025/fl109_afterBreakerTrip/images_30deg_N56RF') next 
+  if(image_dir$path[i] == '//akc0ss-n086/NMML_Polar_Imagery_4/Surveys_IceSeals_2025/fl132_adfg/images_30deg_N56RF') next 
   print(i)
   files <- list.files(image_dir$camera_dir[i], full.names = FALSE, recursive = FALSE)
   files <- data.frame(image_name = files[which(startsWith(files, projectPrefix) == TRUE)], stringsAsFactors = FALSE)
@@ -95,55 +108,33 @@ for (i in 1:nrow(image_dir)){
       meta2DB <- plyr::rbind.fill(meta2DB, metaJ)
     }
   }
-}
-
-colnames(meta2DB) <- gsub("\\.", "_", colnames(meta2DB))
-
-images2DB$flight <- str_extract(images2DB$image_name, "fl[0-9][0-9][0-9]")
-images2DB$camera_view <- gsub("_", "", str_extract(images2DB$image_name, "_[A-Z]_"))
-images2DB$ir_nuc <- NA
-images2DB$rgb_manualreview <- NA
-images2DB$ml_imagestatus <- NA
-
-rm(meta, image_dir, images, log_file, metaJ, i, j, log, logs, meta_file, wd, files)
-
-# Export data to PostgreSQL -----------------------------------------------------------
-con <- RPostgreSQL::dbConnect(PostgreSQL(), 
-                              dbname = Sys.getenv("pep_db"), 
-                              host = Sys.getenv("pep_ip"), 
-                              user = Sys.getenv("pep_admin"), 
-                              password = Sys.getenv("admin_pw"))
-
-# Create list of data to process
-df <- list(images2DB, meta2DB)
-dat <- c("tbl_images", "geo_images_meta")
-
-# Identify and delete dependencies for each table
-# for (i in 1:length(dat)){
-#   sql <- paste("SELECT fxn_deps_save_and_drop_dependencies(\'surv_ice_seals_2025', \'", dat[i], "\')", sep = "")
-#   RPostgreSQL::dbSendQuery(con, sql)
-#   RPostgreSQL::dbClearResult(dbListResults(con)[[1]])
-# }
-# RPostgreSQL::dbSendQuery(con, "DELETE FROM deps_saved_ddl WHERE deps_ddl_to_run NOT LIKE \'%CREATE VIEW%\'")
-
-# Push data to pepgeo database and process data to spatial datasets where appropriate
-for (i in 1:length(dat)){
-  RPostgreSQL::dbWriteTable(con, c("surv_ice_seals_2025", dat[i]), data.frame(df[i]), overwrite = TRUE, row.names = FALSE)
-  if (i == 2) {
-    sql1 <- paste("ALTER TABLE surv_ice_seals_2025.", dat[i], " ADD COLUMN geom geometry(POINT, 4326)", sep = "")
-    sql2 <- paste("UPDATE surv_ice_seals_2025.", dat[i], " SET geom = ST_SetSRID(ST_MakePoint(ins_longitude, ins_latitude), 4326)", sep = "")
-    RPostgreSQL::dbSendQuery(con, sql1)
-    RPostgreSQL::dbSendQuery(con, sql2)
+  
+  colnames(meta2DB) <- gsub("\\.", "_", colnames(meta2DB))
+  
+  images2DB$flight <- str_extract(images2DB$image_name, "fl[0-9][0-9][0-9]")
+  images2DB$camera_view <- gsub("_", "", str_extract(images2DB$image_name, "_[A-Z]_"))
+  images2DB$ir_nuc <- NA
+  images2DB$rgb_manualreview <- NA
+  images2DB$ml_imagestatus <- NA
+  
+  # Create list of data to process
+  df <- list(images2DB, meta2DB)
+  dat <- c("tbl_images", "geo_images_meta")
+  
+  # Import to DB
+  for (k in 1:length(dat)){
+    RPostgreSQL::dbWriteTable(con, c("surv_ice_seals_2025", dat[k]), data.frame(df[k]), append = TRUE, row.names = FALSE)
+    if (k == 2) {
+      if (i == 1) {
+        sql1 <- paste("ALTER TABLE surv_ice_seals_2025.", dat[k], " ADD COLUMN geom geometry(POINT, 4326)", sep = "")
+        RPostgreSQL::dbSendQuery(con, sql1)
+      }
+      sql2 <- paste("UPDATE surv_ice_seals_2025.", dat[k], " SET geom = ST_SetSRID(ST_MakePoint(ins_longitude, ins_latitude), 4326)", sep = "")
+      RPostgreSQL::dbSendQuery(con, sql2)
+    }
   }
 }
 
-# Recreate table dependencies
-# for (i in length(dat):1) {
-#   sql <- paste("SELECT fxn_deps_restore_dependencies(\'surv_ice_seals_2025\', \'", dat[i], "\')", sep = "")
-#   RPostgreSQL::dbSendQuery(con, sql)
-#   RPostgreSQL::dbClearResult(dbListResults(con)[[1]])
-# }
-
 # Disconnect for database and delete unnecessary variables ----------------------------
 RPostgreSQL::dbDisconnect(con)
-rm(con, df, dat, i, sql, sql1, sql2)
+rm(con)

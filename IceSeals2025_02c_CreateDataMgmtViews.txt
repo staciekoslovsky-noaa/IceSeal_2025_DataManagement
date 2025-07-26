@@ -60,12 +60,15 @@ CREATE OR REPLACE VIEW surv_ice_seals_2025.summ_data_inventory
             WHEN crosstab.rgb_footprint IS NULL THEN 'N'::text
             ELSE 'Y'::text
         END AS rgb_footprint,
-	 'N' AS uv_footprint --because no UV footprints in the data
+	    CASE
+            WHEN crosstab.uv_footprint IS NULL THEN 'N'::text
+            ELSE 'Y'::text
+        END AS uv_footprint
    FROM surv_ice_seals_2025.tbl_images m
    LEFT JOIN crosstab('SELECT image_group, 
 	flight, camera_view, dt, image_type, image_name
 	FROM surv_ice_seals_2025.geo_images_footprint
-	ORDER BY 1'::text, 'SELECT DISTINCT image_type FROM surv_ice_seals_2025.geo_images_footprint'::text) crosstab(image_group integer, flight character varying(10), camera_view character varying(10), dt character varying(50), ir_footprint character varying(100), rgb_footprint character varying(100)) USING (image_group)) fp
+	ORDER BY 1'::text, 'SELECT DISTINCT image_type FROM surv_ice_seals_2025.geo_images_footprint'::text) crosstab(image_group integer, flight character varying(10), camera_view character varying(10), dt character varying(50), ir_footprint character varying(100), rgb_footprint character varying(100), uv_footprint character varying(100)) USING (image_group)) fp
 	 USING (image_group);
 
 CREATE OR REPLACE VIEW surv_ice_seals_2025.summ_inv_drop_rate
