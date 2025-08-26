@@ -1,0 +1,38 @@
+--Assign IR Manual Review images (assigned 8/26/2025)
+UPDATE surv_ice_seals_2025.tbl_images
+SET ir_manualreview = NULL;
+
+UPDATE surv_ice_seals_2025.tbl_images
+SET ir_manualreview = 'Y' 
+WHERE flight = 'fl102'
+OR (flight = 'fl207' AND camera_view = 'C')
+OR (flight = 'fl207' AND camera_view = 'R');
+
+UPDATE surv_ice_seals_2025.tbl_images
+SET ir_manualreview = 'N' 
+WHERE ir_manualreview IS NULL;
+
+
+
+--Assign RGB Manual Review images
+UPDATE surv_ice_seals_2025.tbl_images
+SET rgb_manualreview = NULL;
+
+UPDATE surv_ice_seals_2025.tbl_images
+SET rgb_manualreview = 'Y' 
+WHERE (flight = 'fl207' AND camera_view = 'C');
+
+UPDATE surv_ice_seals_2025.tbl_images
+SET rgb_manualreview = 'N' 
+WHERE rgb_manualreview IS NULL;
+
+
+
+--Assign ML Image Status field
+UPDATE surv_ice_seals_2025.tbl_images
+SET ml_image_status = NULL;
+
+UPDATE surv_ice_seals_2025.tbl_images
+SET ml_image_status = '';
+
+
