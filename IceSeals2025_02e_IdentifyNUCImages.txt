@@ -1,0 +1,14 @@
+UPDATE surv_ice_seals_2025.tbl_images
+SET ir_nuc = NULL;
+
+UPDATE surv_ice_seals_2025.tbl_images
+SET ir_nuc = 'Y'
+WHERE image_group in (SELECT image_group FROM surv_ice_seals_2025.geo_images_meta WHERE ir_is_nucing = '1');
+
+UPDATE surv_ice_seals_2025.tbl_images
+SET ir_nuc = 'N'
+WHERE ir_nuc IS NULL;
+
+SELECT ir_nuc, COUNT(ir_nuc)
+FROM surv_ice_seals_2025.tbl_images
+GROUP BY ir_nuc;
