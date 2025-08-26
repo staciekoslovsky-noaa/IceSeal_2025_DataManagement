@@ -50,6 +50,7 @@ for (i in 1:nrow(file_details2DB)) {
                 "\' AND camera_view = \'", file_details2DB$camera_view[i], 
                 "\' AND dt = \'", file_details2DB$dt[i], "\'")
   RPostgreSQL::dbSendQuery(con, sql)
+  print(i)
 }
 
 RPostgreSQL::dbSendQuery(con, paste0("UPDATE surv_ice_seals_2025.tbl_images SET rgb_imagezero = \'NA\' WHERE rgb_imagezero IS NULL"))
