@@ -1,0 +1,16 @@
+CREATE OR REPLACE VIEW surv_ice_seals_2025.tbl_images_4list AS 
+SELECT tbl_images.flight,
+		tbl_images.camera_view,
+		tbl_images.image_type,
+		tbl_images.image_name,
+		(tbl_images.image_dir::text || '/'::text) || tbl_images.image_name::text AS image_path,
+		tbl_images.ir_nuc,
+		tbl_images.ir_manualreview,
+		tbl_images.rgb_imagezero,
+		tbl_images.rgb_manualreview,
+		geo_images_meta.ins_altitude,
+		geo_images_meta.ins_heading,
+		geo_images_meta.ins_roll,
+		geo_images_meta.ins_pitch
+FROM surv_ice_seals_2025.tbl_images
+FULL JOIN surv_ice_seals_2025.geo_images_meta USING (image_group)
