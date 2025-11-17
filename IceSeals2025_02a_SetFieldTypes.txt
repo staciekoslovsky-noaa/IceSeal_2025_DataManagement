@@ -19,7 +19,8 @@ ALTER COLUMN flight TYPE VARCHAR(10),
 ALTER COLUMN camera_view TYPE VARCHAR(10),
 ALTER COLUMN ir_nuc TYPE VARCHAR(10),
 ALTER COLUMN rgb_manualreview TYPE VARCHAR(10),
-ALTER COLUMN ml_imagestatus TYPE VARCHAR(50),
+ALTER COLUMN ml_imagestatus_ir TYPE VARCHAR(50),
+ALTER COLUMN ml_imagestatus_rgb TYPE VARCHAR(50),
 ALTER COLUMN image_dir TYPE VARCHAR(250);
 
 ALTER TABLE surv_ice_seals_2025.geo_images_meta

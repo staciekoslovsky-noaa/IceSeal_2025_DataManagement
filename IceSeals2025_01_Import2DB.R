@@ -115,7 +115,8 @@ for (i in 141:nrow(image_dir)){
   images2DB$camera_view <- gsub("_", "", str_extract(images2DB$image_name, "_[A-Z]_"))
   images2DB$ir_nuc <- NA
   images2DB$rgb_manualreview <- NA
-  images2DB$ml_imagestatus <- NA
+  images2DB$ml_imagestatus_ir <- NA
+  images2DB$ml_imagestatus_rgb <- NA
   
   # Create list of data to process
   df <- list(images2DB, meta2DB)
