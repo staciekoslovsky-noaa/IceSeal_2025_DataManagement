@@ -2,16 +2,19 @@ DROP VIEW IF EXISTS surv_ice_seals_2025.summ_data_inventory CASCADE;
 
 CREATE OR REPLACE VIEW surv_ice_seals_2025.summ_data_inventory
  AS
-  SELECT 
-		CASE WHEN m.flight IS NULL THEN crosstab.flight
-			 ELSE m.flight 
-			 END AS flight,
-		CASE WHEN m.camera_view IS NULL THEN crosstab.camera_view
-			 ELSE m.camera_view 
-			 END AS camera_view,
-		CASE WHEN m.dt IS NULL THEN crosstab.dt
-			 ELSE m.dt 
-			 END AS dt,		 
+   SELECT
+        CASE
+            WHEN m.flight IS NULL THEN crosstab.flight
+            ELSE m.flight
+        END AS flight,
+        CASE
+            WHEN m.camera_view IS NULL THEN crosstab.camera_view
+            ELSE m.camera_view
+        END AS camera_view,
+        CASE
+            WHEN m.dt IS NULL THEN crosstab.dt
+            ELSE m.dt
+        END AS dt,
         CASE
             WHEN m.meta_file IS NULL THEN 'N'::text
             ELSE 'Y'::text
@@ -28,9 +31,9 @@ CREATE OR REPLACE VIEW surv_ice_seals_2025.summ_data_inventory
             WHEN crosstab.uv_image IS NULL THEN 'N'::text
             ELSE 'Y'::text
         END AS uv_image,
-	 	 ir_footprint, 
-	 rgb_footprint,
-	 uv_footprint,
+    fp.ir_footprint,
+    fp.rgb_footprint,
+    fp.uv_footprint,
     m.evt_header_frame_id,
     m.meta_file AS meta_file_name,
     crosstab.ir_image AS ir_image_name,
@@ -41,35 +44,35 @@ CREATE OR REPLACE VIEW surv_ice_seals_2025.summ_data_inventory
     (crosstab.image_dir::text || '/'::text) || crosstab.uv_image::text AS uv_image_path,
     crosstab.ir_nuc,
     crosstab.rgb_manualreview,
-	crosstab.ml_imagestatus,
+    crosstab.ml_imagestatus_ir,
+	crosstab.ml_imagestatus_rgb,
     m.ins_altitude,
     m.ins_heading,
     m.ins_roll,
     m.ins_pitch
    FROM crosstab('SELECT image_group, 
-	flight, camera_view, dt, image_dir, ir_nuc, rgb_manualreview, ml_imagestatus, image_type, image_name
+	flight, camera_view, dt, image_dir, ir_nuc, rgb_manualreview, ml_imagestatus_ir, ml_imagestatus_rgb, image_type, image_name
 	FROM surv_ice_seals_2025.tbl_images
-	ORDER BY 1'::text, 'SELECT DISTINCT image_type FROM surv_ice_seals_2025.tbl_images'::text) crosstab(image_group integer, flight character varying(10), camera_view character varying(10), dt character varying(50), image_dir character varying(250), ir_nuc character varying(10), rgb_manualreview character varying(10), ml_imagestatus character varying(50), ir_image character varying(100), rgb_image character varying(100), uv_image character varying(100))
+	ORDER BY 1'::text, 'SELECT DISTINCT image_type FROM surv_ice_seals_2025.tbl_images'::text) crosstab(image_group integer, flight character varying(10), camera_view character varying(10), dt character varying(50), image_dir character varying(250), ir_nuc character varying(10), rgb_manualreview character varying(10), ml_imagestatus_ir character varying(50), ml_imagestatus_rgb character varying(50), ir_image character varying(100), rgb_image character varying(100), uv_image character varying(100))
      LEFT JOIN surv_ice_seals_2025.geo_images_meta m USING (image_group)
-	 LEFT JOIN (SELECT DISTINCT m.image_group,
-        CASE
-            WHEN crosstab.ir_footprint IS NULL THEN 'N'::text
-            ELSE 'Y'::text
-        END AS ir_footprint,
-        CASE
-            WHEN crosstab.rgb_footprint IS NULL THEN 'N'::text
-            ELSE 'Y'::text
-        END AS rgb_footprint,
-	    CASE
-            WHEN crosstab.uv_footprint IS NULL THEN 'N'::text
-            ELSE 'Y'::text
-        END AS uv_footprint
-   FROM surv_ice_seals_2025.tbl_images m
-   LEFT JOIN crosstab('SELECT image_group, 
+     LEFT JOIN ( SELECT DISTINCT m_1.image_group,
+                CASE
+                    WHEN crosstab_1.ir_footprint IS NULL THEN 'N'::text
+                    ELSE 'Y'::text
+                END AS ir_footprint,
+                CASE
+                    WHEN crosstab_1.rgb_footprint IS NULL THEN 'N'::text
+                    ELSE 'Y'::text
+                END AS rgb_footprint,
+                CASE
+                    WHEN crosstab_1.uv_footprint IS NULL THEN 'N'::text
+                    ELSE 'Y'::text
+                END AS uv_footprint
+           FROM surv_ice_seals_2025.tbl_images m_1
+             LEFT JOIN crosstab('SELECT image_group, 
 	flight, camera_view, dt, image_type, image_name
 	FROM surv_ice_seals_2025.geo_images_footprint
-	ORDER BY 1'::text, 'SELECT DISTINCT image_type FROM surv_ice_seals_2025.geo_images_footprint'::text) crosstab(image_group integer, flight character varying(10), camera_view character varying(10), dt character varying(50), ir_footprint character varying(100), rgb_footprint character varying(100), uv_footprint character varying(100)) USING (image_group)) fp
-	 USING (image_group);
+	ORDER BY 1'::text, 'SELECT DISTINCT image_type FROM surv_ice_seals_2025.geo_images_footprint'::text) crosstab_1(image_group integer, flight character varying(10), camera_view character varying(10), dt character varying(50), ir_footprint character varying(100), rgb_footprint character varying(100), uv_footprint character varying(100)) USING (image_group)) fp USING (image_group);;
 
 CREATE OR REPLACE VIEW surv_ice_seals_2025.summ_inv_drop_rate
  AS

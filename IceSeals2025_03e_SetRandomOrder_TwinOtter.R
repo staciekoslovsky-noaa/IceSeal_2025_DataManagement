@@ -31,8 +31,8 @@ for (i in 1:nrow(ir_summary)){
 }
 
 # Identify quartile breaks of data in random order
-ir_summary$cumsum_animals <- cumsum(ir_summary$num_animals)
-ir_summary$proportion_animals <- ir_summary$cumsum_animals / max(ir_summary$cumsum_animals)
+# ir_summary$cumsum_animals <- cumsum(ir_summary$num_animals)
+# ir_summary$proportion_animals <- ir_summary$cumsum_animals / max(ir_summary$cumsum_animals)
 
 # Disconnect from DB
 RPostgreSQL::dbDisconnect(con)

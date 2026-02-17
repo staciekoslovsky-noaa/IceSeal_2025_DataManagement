@@ -42,10 +42,11 @@ data <- images_ir %>%
   full_join(detections, "image_name") 
 
 data_withoutImages <- data %>%
-  filter(is.na(flight))
+  filter(is.na(flight) | ir_nuc == "Y")
 
 data_4review <- data %>%
   filter(score >= 0.1) %>%
+  filter(!is.na(flight)) %>% # eliminates NUC or missing frames
   filter(detection_type == "Hotspot") %>% # frames with detections
   select(detection, image_name, frame_number, bound_left, bound_top, bound_right, bound_bottom, score, length, detection_type, type_score, detection_id, flight, camera_view, image_path) %>%
   arrange(flight, camera_view, image_name) 
@@ -97,6 +98,13 @@ for (i in 1:nrow(flight_cv)) {
               quote = FALSE, row.names = FALSE, col.names = FALSE)
   write.table(export_annotations, paste(wd, export_folder, paste("ice_seals_2025", flight_i, camera_view_i, "ir_detections.csv", sep = "_"), sep = "/"), 
               sep = ",", quote = FALSE, row.names = FALSE, col.names = FALSE)
+  
+  detection_ids <- export %>%
+    mutate(processed_detection_id = paste("surv_ice_seals_2025", flight_i, camera_view_i, detection, sep = "_")) %>%
+    select(image_name, detection_id, processed_detection_id)
+  
+  RPostgreSQL::dbWriteTable(con, c("surv_ice_seals_2025", "tbl_detections_ids_original2processed"), detection_ids, append = TRUE, row.names = FALSE)
+  
 }
 
 # Disconnect from DB

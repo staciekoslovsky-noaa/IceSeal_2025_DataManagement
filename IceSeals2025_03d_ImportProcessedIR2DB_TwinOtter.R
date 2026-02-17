@@ -29,7 +29,7 @@ for (i in 1:nrow(folders)) {
   #if(folders$flight[i] == 'fl07' & folders$camera_view[i] == 'L') next 
   
   if (i == 1) {
-    processed_id$max <- 0
+    processed_id <- data.frame(max = 0)
   } else {
     processed_id <- RPostgreSQL::dbGetQuery(con, "SELECT max(id) FROM surv_ice_seals_2025.tbl_detections_processed_ir")
     processed_id$max <- ifelse(is.na(processed_id$max), 0, processed_id$max)
@@ -45,8 +45,8 @@ for (i in 1:nrow(folders)) {
     mutate(detection_file = ir_validated) %>%
     mutate(flight = folders$flight[i]) %>%
     mutate(camera_view = folders$camera_view[i]) %>%
-    mutate(detection_id = paste("surv_ice_seals_2025", flight, camera_view, detection, sep = "_")) %>%
-    select("id", "detection", "image_name", "frame_number", "bound_left", "bound_top", "bound_right", "bound_bottom", "score", "length", "detection_type", "type_score", "flight", "camera_view", "detection_id", "detection_file", "detection_comments")
+    mutate(processed_detection_id = paste("surv_ice_seals_2025", flight, camera_view, detection, sep = "_")) %>%
+    select("id", "detection", "image_name", "frame_number", "bound_left", "bound_top", "bound_right", "bound_bottom", "score", "length", "detection_type", "type_score", "flight", "camera_view", "processed_detection_id", "detection_file", "detection_comments")
   
   # Import data to DB
   RPostgreSQL::dbWriteTable(con, c("surv_ice_seals_2025", "tbl_detections_processed_ir"), processed, append = TRUE, row.names = FALSE)
