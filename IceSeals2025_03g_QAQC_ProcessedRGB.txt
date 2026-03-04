@@ -1,0 +1,79 @@
+--RGB processed not in IR processed
+SELECT flight, camera_view, COUNT(id) AS num_missing
+FROM surv_ice_seals_2025.tbl_detections_processed_rgb
+WHERE processed_detection_id NOT IN (SELECT processed_detection_id FROM surv_ice_seals_2025.tbl_detections_processed_ir)
+GROUP BY flight, camera_view
+ORDER BY flight, camera_view;
+
+--IR processed not in RGB
+SELECT flight, camera_view, COUNT(id) AS num_missing
+FROM surv_ice_seals_2025.tbl_detections_processed_ir
+WHERE processed_detection_id NOT IN (SELECT processed_detection_id FROM surv_ice_seals_2025.tbl_detections_processed_rgb)
+GROUP BY flight, camera_view
+ORDER BY flight, camera_view;
+
+--Details of missing IR in RGB
+SELECT *
+FROM surv_ice_seals_2025.tbl_detections_processed_ir
+WHERE processed_detection_id NOT IN (SELECT processed_detection_id FROM surv_ice_seals_2025.tbl_detections_processed_rgb)
+AND flight = 'fl120' AND camera_view = 'R';
+
+--Check detection_types
+SELECT DISTINCT detection_type
+FROM surv_ice_seals_2025.tbl_detections_processed_rgb
+ORDER BY detection_type;
+
+SELECT *
+FROM surv_ice_seals_2025.tbl_detections_processed_rgb
+WHERE detection_type = 'no_rgb';
+
+--Check for missing data
+SELECT *
+FROM surv_ice_seals_2025.tbl_detections_processed_rgb
+WHERE detection_type IS NULL
+OR species_confidence IS NULL
+OR age_class IS NULL
+OR age_class_confidence IS NULL
+ORDER BY flight, camera_view;
+
+--Check for off-frame IR data (18 records currently affected)
+SELECT *
+FROM surv_ice_seals_2025.tbl_detections_processed_ir
+WHERE (bound_bottom < 0 
+OR bound_top > 512
+OR bound_right < 0
+OR bound_left > 640)
+AND detection_type <> 'off_ir'
+ORDER BY flight, camera_view;
+
+--Check for off-frame RGB data (3 records currently affected)
+SELECT *
+FROM surv_ice_seals_2025.tbl_detections_processed_rgb
+WHERE (bound_bottom < 0 
+OR bound_top > 9564
+OR bound_right < 0
+OR bound_left > 12768)
+AND detection_type <> 'false_positive' 
+AND detection_type <> 'off_frame'
+ORDER BY flight, camera_view;
+
+--Check for species when IR detection is 'off_ir' (all OK so far)
+SELECT r.*
+FROM surv_ice_seals_2025.tbl_detections_processed_rgb r
+INNER JOIN surv_ice_seals_2025.tbl_detections_processed_ir i USING (processed_detection_id)
+WHERE i.detection_type = 'off_ir'
+ORDER BY flight, camera_view;
+
+--Walruses vs walrus
+SELECT *, bound_right - bound_left as width, bound_bottom - bound_top as height
+FROM surv_ice_seals_2025.tbl_detections_processed_rgb
+WHERE detection_type = 'walrus'
+AND bound_bottom - bound_top > 200
+AND bound_right - bound_left > 200;
+
+SELECT *, bound_right - bound_left as width, bound_bottom - bound_top as height
+FROM surv_ice_seals_2025.tbl_detections_processed_rgb
+WHERE detection_type = 'walrus_water'
+AND bound_bottom - bound_top > 200
+AND bound_right - bound_left > 200;
+
