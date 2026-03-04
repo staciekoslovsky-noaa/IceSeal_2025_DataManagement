@@ -26,7 +26,7 @@ con <- RPostgreSQL::dbConnect(PostgreSQL(),
                               user = Sys.getenv("pep_admin"), 
                               password = Sys.getenv("admin_pw"))
 
-# RPostgreSQL::dbSendQuery(con, "DELETE FROM surv_ice_seals_2025.geo_images_footprint")
+RPostgreSQL::dbSendQuery(con, "DELETE FROM surv_ice_seals_2025.geo_images_footprint")
 
 # Read shapefiles
 dir <- list.dirs(wd, full.names = FALSE, recursive = FALSE)
@@ -34,7 +34,7 @@ dir <- data.frame(path = dir[grep("fl", dir)], stringsAsFactors = FALSE) %>%
   filter(stringr::str_starts(path, 'fl')) %>%
   mutate(path = paste(wd, "\\", path, "\\processed_results\\fov_shapefiles", sep = ""))
 
-for (j in 8:nrow(dir)) {
+for (j in 1:nrow(dir)) {
   shps <- list.files(path = dir$path[j], pattern = "shp", full.names = TRUE)
   if (length(shps) == 0) next
   for (i in 1:length(shps)) {
@@ -50,11 +50,17 @@ for (j in 8:nrow(dir)) {
     
     shape <- sf::st_read(shps[i])
     
+    if("track_angl" %in% colnames(shape))
+    {
+      shape <- shape %>%
+        rename(heading = track_angl)
+    }
+    
     shape <- shape %>%
       rename(
         geom = geometry, 
         image_name = image_file
-      ) %>%
+      ) %>% 
       mutate(id = 1:n() + next_id$max,
              effort = as.character(effort),
              trigger = as.character(trigger),
