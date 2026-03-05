@@ -63,17 +63,3 @@ FROM surv_ice_seals_2025.tbl_detections_processed_rgb r
 INNER JOIN surv_ice_seals_2025.tbl_detections_processed_ir i USING (processed_detection_id)
 WHERE i.detection_type = 'off_ir'
 ORDER BY flight, camera_view;
-
---Walruses vs walrus
-SELECT *, bound_right - bound_left as width, bound_bottom - bound_top as height
-FROM surv_ice_seals_2025.tbl_detections_processed_rgb
-WHERE detection_type = 'walrus'
-AND bound_bottom - bound_top > 200
-AND bound_right - bound_left > 200;
-
-SELECT *, bound_right - bound_left as width, bound_bottom - bound_top as height
-FROM surv_ice_seals_2025.tbl_detections_processed_rgb
-WHERE detection_type = 'walrus_water'
-AND bound_bottom - bound_top > 200
-AND bound_right - bound_left > 200;
-

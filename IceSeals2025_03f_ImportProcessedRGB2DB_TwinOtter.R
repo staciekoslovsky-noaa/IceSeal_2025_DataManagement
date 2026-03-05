@@ -65,7 +65,9 @@ for (i in 1:nrow(folders)) {
            bound_bottom = as.integer(bound_bottom)) %>%
     select("id", "detection", "image_name", "frame_number", "bound_left", "bound_top", "bound_right", "bound_bottom", "score", "length", "detection_type", "type_score", 
            "flight", "camera_view", "processed_detection_id", "detection_file",
-           "species_confidence", "age_class", "age_class_confidence", "flag")
+           "species_confidence", "age_class", "age_class_confidence", "flag") %>%
+    mutate(detection_type = ifelse(detection_type == 'walrus' & (bound_bottom - bound_top) > 200 & (bound_right - bound_left) > 200, 'walruses', detection_type)) %>%
+    mutate(detection_type = ifelse(detection_type == 'walrus_water' & (bound_bottom - bound_top) > 200 & (bound_right - bound_left) > 200, 'walruses_water', detection_type))
   
   # Import data to DB
   RPostgreSQL::dbWriteTable(con, c("surv_ice_seals_2025", "tbl_detections_processed_rgb"), processed, append = TRUE, row.names = FALSE)
