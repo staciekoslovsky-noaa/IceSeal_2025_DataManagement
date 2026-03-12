@@ -15,15 +15,28 @@ input_image_list_ir = 'KAMERA data collection',
 input_image_list_rgb = 'KAMERA data collection',
 input_image_list_uv = 'KAMERA data collection',
 annotation_status_lku = 'R',
-annotations_folder = 'ice_seals_2025_202509_inFlightDetections'
-WHERE project_schema = 'surv_ice_seals_2025';
+annotations_folder = 'ice_seals_2025_202509_inFlightDetections_TwinOtter'
+WHERE project_schema = 'surv_ice_seals_2025'
+AND flight < 'fl200';
+
+UPDATE annotations.tbl_detector_meta
+SET detector_pipeline = 'KAMERA in-flight detection pipeline',
+algorithm_run_location = 'King Air',
+algorithm_run_machine = 'nayak',
+algorithm_run_dt = '2026-03-05',
+input_image_list_uv = 'not_applicable',
+uv_image_list = 'not_applicable',
+uv_detection_csv = 'not_applicable',
+annotation_status_lku = 'R',
+annotations_folder = 'ice_seals_2025_202603_batchProcessing_KingAir'
+WHERE project_schema = 'surv_ice_seals_2025'
+AND flight > 'fl200';
 
 -- Manually add flights and camera views
 
 -- Assign start file names
 UPDATE annotations.tbl_detector_meta
-SET ir_image_list = 'ice_seals_2025_' || flight || '_' || camera_view || '_ir_images.txt' ,
-ir_detection_csv = 'ice_seals_2025_' || flight || '_' || camera_view || '_ir_detections.csv',
+SET ir_image_list = 'ice_seals_2025_' || flight || '_' || camera_view || '_ir_images.txt',
 rgb_image_list = 'ice_seals_2025_' || flight || '_' || camera_view || '_rgb_images.txt',
 rgb_detection_csv = 'not_applicable',
 uv_image_list = 'ice_seals_2025_' || flight || '_' || camera_view || '_uv_images.txt',
@@ -31,14 +44,32 @@ uv_detection_csv = 'not_applicable',
 ir_processed_csv = 'user_to_specify',
 rgb_processed_csv = 'user_to_specify',
 uv_processed_csv = 'user_to_specify'
-WHERE project_schema = 'surv_ice_seals_2025';
+WHERE project_schema = 'surv_ice_seals_2025'
+AND flight < 'fl200';
+
+UPDATE annotations.tbl_detector_meta
+SET input_image_list_ir = 'ice_seals_2025_' || flight || '_' || camera_view || '_ir_images.txt',
+input_image_list_rgb = 'ice_seals_2025_' || flight || '_' || camera_view || '_rgb_images.txt',
+input_image_list_uv = 'not_applicable',
+ir_image_list = 'ice_seals_2025_' || flight || '_' || camera_view || '_ir_images.txt' ,
+ir_detection_csv = 'ice_seals_2025_' || flight || '_' || camera_view || '_ir_detections.csv' ,
+rgb_image_list = 'ice_seals_2025_' || flight || '_' || camera_view || '_rgb_images.txt',
+rgb_detection_csv = 'not_applicable',
+uv_image_list = 'ice_seals_2025_' || flight || '_' || camera_view || '_uv_images.txt',
+uv_detection_csv = 'not_applicable',
+ir_processed_csv = 'user_to_specify',
+rgb_processed_csv = 'user_to_specify',
+uv_processed_csv = 'user_to_specify'
+WHERE project_schema = 'surv_ice_seals_2025'
+AND flight > 'fl200';
 
 -- Create starting tracker steps
 INSERT INTO annotations.tbl_detector_processing (detector_meta_id, processing_step_lku)
 SELECT id, processing_step_lku
 FROM annotations.tbl_detector_meta m
 INNER JOIN annotations.lku_processing_step p USING (project_schema)
-WHERE m.project_schema = 'surv_ice_seals_2025';
+WHERE m.project_schema = 'surv_ice_seals_2025'
+--AND flight > 'fl200';
 
 SELECT * FROM annotations.tbl_detector_meta
 WHERE project_schema = 'surv_ice_seals_2025'
