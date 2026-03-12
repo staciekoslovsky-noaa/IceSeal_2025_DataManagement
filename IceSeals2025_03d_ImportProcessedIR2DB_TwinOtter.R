@@ -17,7 +17,7 @@ con <- RPostgreSQL::dbConnect(PostgreSQL(),
                               password = Sys.getenv("admin_pw"))
 
 # Delete data from tables (if needed)
-RPostgreSQL::dbSendQuery(con, "DELETE FROM surv_ice_seals_2025.tbl_detections_processed_ir")
+RPostgreSQL::dbSendQuery(con, "DELETE FROM surv_ice_seals_2025.tbl_detections_processed_ir WHERE flight < 'fl200'")
 
 # Import data and process
 folders <- data.frame(folder_path = list.dirs(path = wd, full.names = TRUE, recursive = FALSE), stringsAsFactors = FALSE)
