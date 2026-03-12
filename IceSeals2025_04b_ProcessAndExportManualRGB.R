@@ -42,7 +42,7 @@ images_on_all_sampled <- images_on_all %>%
   filter(row_number() %% 20 == 0) %>%
   mutate(rgb_manualreview = 'Y')
 
-RPostgreSQL::dbWriteTable(con, c("surv_ice_seals_2025", "temp"), images_on_all_sampled, append = TRUE, row.names = FALSE)
+RPostgreSQL::dbWriteTable(con, c("surv_ice_seals_2025", "temp"), images_on_all_sampled, overwrite = TRUE, row.names = FALSE)
 
 RPostgreSQL::dbSendQuery(con, "UPDATE surv_ice_seals_2025.tbl_images i
                             SET rgb_manualreview = t.rgb_manualreview 
