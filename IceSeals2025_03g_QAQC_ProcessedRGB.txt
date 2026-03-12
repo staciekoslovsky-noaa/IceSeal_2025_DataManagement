@@ -37,7 +37,6 @@ OR age_class_confidence IS NULL
 ORDER BY flight, camera_view;
 
 --Check for off-frame IR data (18 records currently affected)
-SELECT *
 FROM surv_ice_seals_2025.tbl_detections_processed_ir
 WHERE (bound_bottom < 0 
 OR bound_top > 512
@@ -46,7 +45,7 @@ OR bound_left > 640)
 AND detection_type <> 'off_ir'
 ORDER BY flight, camera_view;
 
---Check for off-frame RGB data (3 records currently affected)
+--Check for off-frame RGB data
 SELECT *
 FROM surv_ice_seals_2025.tbl_detections_processed_rgb
 WHERE (bound_bottom < 0 
@@ -57,7 +56,7 @@ AND detection_type <> 'false_positive'
 AND detection_type <> 'off_frame'
 ORDER BY flight, camera_view;
 
---Check for species when IR detection is 'off_ir' (all OK so far)
+--Check for detection_type when IR detection is 'off_ir' (these should all have species)
 SELECT r.*
 FROM surv_ice_seals_2025.tbl_detections_processed_rgb r
 INNER JOIN surv_ice_seals_2025.tbl_detections_processed_ir i USING (processed_detection_id)
