@@ -1,0 +1,69 @@
+UPDATE surv_ice_seals_2025.geo_images_meta m
+SET effort_reconciled = effort_field;
+
+--Correct effort when there are altitude issues????
+
+--Correct effort when IR NUC
+UPDATE surv_ice_seals_2025.geo_images_meta m
+SET effort_reconciled = 'OFF'
+FROM surv_ice_seals_2025.tbl_images i
+WHERE m.flight = i.flight AND m.camera_view = i.camera_view AND m.dt = i.dt
+AND i.ir_nuc = 'Y';
+
+--Assign effort based on roll values
+UPDATE surv_ice_seals_2025.geo_images_meta
+SET effort_reconciled = 'OFF'
+WHERE (ins_roll > 5 AND camera_view = 'L')
+OR (ins_roll < -5 AND camera_view = 'R')
+OR (abs(ins_roll) > 30  AND camera_view = 'C');
+
+--Update effort when the aircraft was over land
+UPDATE surv_ice_seals_2025.geo_images_meta m
+SET effort_reconciled = 'OFF'
+FROM surv_ice_seals_2025.tbl_images i
+WHERE m.flight = i.flight AND m.camera_view = i.camera_view AND m.dt = i.dt
+AND (
+--fl106
+	(m.flight = 'fl106' AND m.dt >= '20250411_001205.149864' AND m.dt <= '20250411_001218.235569')
+--fl111
+	OR (m.flight = 'fl111' AND m.dt >= '20250419_200519.464528' AND m.dt <= '20250419_200521.407115')
+	OR (m.flight = 'fl111' AND m.dt >= '20250419_200756.440689' AND m.dt <= '20250419_200948.514981')
+	OR (m.flight = 'fl111' AND m.dt >= '20250419_202313.250830' AND m.dt <= '20250419_202331.966317')
+--fl115
+	OR (m.flight = 'fl115' AND m.dt >= '20250423_015755.408679' AND m.dt <= '20250423_015759.387909')
+--fl122
+	OR (m.flight = 'fl122' AND m.dt >= '20250508_181807.302114' AND m.dt <= '20250508_181820.615178')
+--fl125
+	OR (m.flight = 'fl125' AND m.dt >= '20250510_190139.119085' AND m.dt <= '20250510_190148.015053')
+--fl132
+	OR (m.flight = 'fl132' AND m.dt >= '20250602_220217.182955' AND m.dt <= '20250602_220227.406352')
+--fl134
+	OR (m.flight = 'fl134' AND m.dt >= '20250605_225150.294718' AND m.dt <= '20250605_225151.382900')
+--fl138
+	OR (m.flight = 'fl138' AND m.dt >= '20250610_203058.718120' AND m.dt <= '20250610_203103.066821')
+--fl201
+	OR (m.flight = 'fl201' AND m.dt >= '20250405_011218.197482' AND m.dt <= '20250405_011222.781938')
+--fl210
+	OR (m.flight = 'fl210' AND m.dt >= '20250420_232551.710151' AND m.dt <= '20250420_232555.332658')
+	OR (m.flight = 'fl210' AND m.dt >= '20250420_232623.574855' AND m.dt <= '20250420_232730.621939')
+--fl211
+	OR (m.flight = 'fl211' AND m.dt >= '20250421_194218.589766' AND m.dt <= '20250421_194253.982979')
+--fl214
+	OR (m.flight = 'fl214' AND m.dt >= '20250424_234457.391546' AND m.dt <= '20250424_234545.799848')
+	OR (m.flight = 'fl214' AND m.dt >= '20250425_000602.501780' AND m.dt <= '20250425_000630.192564')
+--fl218
+	OR (m.flight = 'fl218' AND m.dt >= '20250508_214701.838016' AND m.dt <= '20250508_214724.797147')
+--fl226
+	OR (m.flight = 'fl226' AND m.dt >= '20250519_223959.413419' AND m.dt <= '20250519_224011.738570')
+--fl242
+	OR (m.flight = 'fl242' AND m.dt >= '20250606_224907.863742' AND m.dt <= '20250606_224916.977211')
+	OR (m.flight = 'fl242' AND m.dt >= '20250606_225230.604163' AND m.dt <= '20250606_225236.397813')
+	OR (m.flight = 'fl242' AND m.dt >= '20250607_021017.617960' AND m.dt <= '20250607_021022.394159')
+);
+
+--Update effort when still on BEAR effort
+UPDATE surv_ice_seals_2025.geo_images_meta m
+SET effort_reconciled = 'BEAR'
+FROM surv_ice_seals_2025.tbl_images i
+WHERE m.flight = i.flight AND m.camera_view = i.camera_view AND m.dt = i.dt
+AND (m.flight = 'fl111' AND m.dt >= '20250419_234025.635426' AND m.dt <= '20250419_234152.159317');
