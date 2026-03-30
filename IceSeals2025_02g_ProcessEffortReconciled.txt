@@ -21,8 +21,7 @@ OR (abs(ins_roll) > 30  AND camera_view = 'C');
 UPDATE surv_ice_seals_2025.geo_images_meta m
 SET effort_reconciled = 'OFF'
 FROM surv_ice_seals_2025.tbl_images i
-WHERE m.flight = i.flight AND m.camera_view = i.camera_view AND m.dt = i.dt
-AND (
+WHERE 
 --fl106
 	(m.flight = 'fl106' AND m.dt >= '20250411_001205.149864' AND m.dt <= '20250411_001218.235569')
 --fl111
@@ -59,11 +58,9 @@ AND (
 	OR (m.flight = 'fl242' AND m.dt >= '20250606_224907.863742' AND m.dt <= '20250606_224916.977211')
 	OR (m.flight = 'fl242' AND m.dt >= '20250606_225230.604163' AND m.dt <= '20250606_225236.397813')
 	OR (m.flight = 'fl242' AND m.dt >= '20250607_021017.617960' AND m.dt <= '20250607_021022.394159')
-);
+;
 
 --Update effort when still on BEAR effort
 UPDATE surv_ice_seals_2025.geo_images_meta m
 SET effort_reconciled = 'BEAR'
-FROM surv_ice_seals_2025.tbl_images i
-WHERE m.flight = i.flight AND m.camera_view = i.camera_view AND m.dt = i.dt
-AND (m.flight = 'fl111' AND m.dt >= '20250419_234025.635426' AND m.dt <= '20250419_234152.159317');
+WHERE (m.flight = 'fl111' AND m.dt >= '20250419_234025.635426' AND m.dt <= '20250419_234152.159317');
