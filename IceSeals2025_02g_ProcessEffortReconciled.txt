@@ -64,3 +64,8 @@ WHERE
 UPDATE surv_ice_seals_2025.geo_images_meta m
 SET effort_reconciled = 'BEAR'
 WHERE (m.flight = 'fl111' AND m.dt >= '20250419_234025.635426' AND m.dt <= '20250419_234152.159317');
+
+--Update effort when there was an accidental change
+UPDATE surv_ice_seals_2025.geo_images_meta m
+SET effort_reconciled = 'ON_SAMPLE'
+WHERE (m.flight = 'fl111' AND m.dt >= '20250419_205819.545790' AND m.dt <= '20250419_211231.988872');
