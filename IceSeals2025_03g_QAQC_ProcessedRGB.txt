@@ -56,9 +56,9 @@ AND detection_type <> 'false_positive'
 AND detection_type <> 'off_frame'
 ORDER BY flight, camera_view;
 
---Check for detection_type when IR detection is 'off_ir' (these should all have species)
+--Check for detection_type when IR detection is 'animal_off_ir' (these should all have species)
 SELECT r.*
 FROM surv_ice_seals_2025.tbl_detections_processed_rgb r
 INNER JOIN surv_ice_seals_2025.tbl_detections_processed_ir i USING (processed_detection_id)
-WHERE i.detection_type = 'off_ir'
+WHERE i.detection_type = 'animal_off_ir'
 ORDER BY flight, camera_view;

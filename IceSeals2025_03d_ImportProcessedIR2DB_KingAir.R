@@ -109,6 +109,11 @@ for (i in 1:nrow(folders)) {
       "processed_detection_id",
       "detection_file",
       "detection_comments"
+    ) %>%
+    mutate(
+      ifelse(detection_type == 'off_ir',
+             'animal_off_ir', 
+             detection_type)
     )
 
   # Import data to DB
