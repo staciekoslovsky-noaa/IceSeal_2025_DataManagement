@@ -43,17 +43,20 @@ CREATE OR REPLACE VIEW surv_ice_seals_2025.summ_data_inventory
     (crosstab.image_dir::text || '/'::text) || crosstab.rgb_image::text AS rgb_image_path,
     (crosstab.image_dir::text || '/'::text) || crosstab.uv_image::text AS uv_image_path,
     crosstab.ir_nuc,
+	crosstab.rgb_imagezero,
     crosstab.rgb_manualreview,
     crosstab.ml_imagestatus_ir,
 	crosstab.ml_imagestatus_rgb,
     m.ins_altitude,
     m.ins_heading,
     m.ins_roll,
-    m.ins_pitch
+    m.ins_pitch,
+	m.effort_field,
+	m.effort_reconciled
    FROM crosstab('SELECT image_group, 
-	flight, camera_view, dt, image_dir, ir_nuc, rgb_manualreview, ml_imagestatus_ir, ml_imagestatus_rgb, image_type, image_name
+	flight, camera_view, dt, image_dir, ir_nuc, rgb_imagezero, rgb_manualreview, ml_imagestatus_ir, ml_imagestatus_rgb, image_type, image_name
 	FROM surv_ice_seals_2025.tbl_images
-	ORDER BY 1'::text, 'SELECT DISTINCT image_type FROM surv_ice_seals_2025.tbl_images'::text) crosstab(image_group integer, flight character varying(10), camera_view character varying(10), dt character varying(50), image_dir character varying(250), ir_nuc character varying(10), rgb_manualreview character varying(10), ml_imagestatus_ir character varying(50), ml_imagestatus_rgb character varying(50), ir_image character varying(100), rgb_image character varying(100), uv_image character varying(100))
+	ORDER BY 1'::text, 'SELECT DISTINCT image_type FROM surv_ice_seals_2025.tbl_images'::text) crosstab(image_group integer, flight character varying(10), camera_view character varying(10), dt character varying(50), image_dir character varying(250), ir_nuc character varying(10), rgb_imagezero character varying(10), rgb_manualreview character varying(10), ml_imagestatus_ir character varying(50), ml_imagestatus_rgb character varying(50), ir_image character varying(100), rgb_image character varying(100), uv_image character varying(100))
      LEFT JOIN surv_ice_seals_2025.geo_images_meta m USING (image_group)
      LEFT JOIN ( SELECT DISTINCT m_1.image_group,
                 CASE
