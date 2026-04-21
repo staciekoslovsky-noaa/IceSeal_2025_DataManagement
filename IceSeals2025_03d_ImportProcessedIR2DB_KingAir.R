@@ -111,9 +111,11 @@ for (i in 1:nrow(folders)) {
       "detection_comments"
     ) %>%
     mutate(
-      ifelse(detection_type == 'off_ir',
-             'animal_off_ir', 
-             detection_type)
+      detection_type = ifelse(
+        detection_type == 'off_ir',
+        'animal_off_ir',
+        detection_type
+      )
     )
 
   # Import data to DB
