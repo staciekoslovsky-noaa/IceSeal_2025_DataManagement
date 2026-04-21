@@ -1,0 +1,58 @@
+DROP TABLE surv_ice_seals_2025.geo_track_by_flight;
+
+CREATE TABLE surv_ice_seals_2025.geo_track_by_flight AS 
+SELECT row_number() OVER (ORDER BY locs.flight) AS id, locs.flight, st_makeline(locs.geom) AS geom
+FROM (SELECT flight, camera_view, geom
+	FROM surv_ice_seals_2025.geo_images_meta
+	WHERE ins_latitude > 56
+	ORDER BY flight, dt
+	) locs
+GROUP BY flight
+ORDER BY flight;
+  
+  
+ 
+DROP TABLE surv_ice_seals_2025.geo_track_by_effort;
+
+CREATE TABLE surv_ice_seals_2025.geo_track_by_effort AS
+with a as (select row_number() over (order by flight, dt) as id, flight, dt, effort_reconciled, image_name, geom,
+       dense_rank() over (partition by grp order by flight, dt) as row_num
+from (select t.*, image_name,
+             (row_number() over (order by t.flight, t.dt) -
+              row_number() over (partition by t.effort_reconciled order by t.flight, t.dt)
+             ) as grp
+      FROM surv_ice_seals_2025.geo_images_meta t
+	  LEFT JOIN surv_ice_seals_2025.tbl_images USING (image_group)
+	  WHERE image_type = 'rgb_image' AND t.camera_view = 'C' --AND t.flight = 'fl01'
+     ) x
+ORDER BY flight, dt), 
+
+b as (
+select id, flight, dt, effort_reconciled, row_number() over (order by flight, dt) as effort_num
+from a
+where row_num = 1
+order by flight, dt),
+
+c as (select b.id, c.id as next_id, b.flight, b.effort_reconciled, b.effort_num
+from b, b as c 
+where b.effort_num = c.effort_num - 1),
+
+max_effort as (SELECT max(effort_num) FROM b), 
+
+d as (select b.id, c.id as next_id, b.flight, b.effort_reconciled, b.effort_num
+from b, b as c 
+where b.effort_num = c.effort_num + 1
+and b.effort_num IN (SELECT * FROM max_effort)), 
+
+e as (select * from c 
+union
+select * from d),
+
+f as (
+select a.id, a.flight, a.dt, a.effort_reconciled, a.geom, e.effort_num
+from a, e
+where a.id >= e.id and a.id < e.next_id)
+
+select row_number() over (order by effort_num) as effort_id, flight, effort_reconciled, st_makeline(geom order by flight, dt)
+from f
+group by flight, effort_reconciled, effort_num
