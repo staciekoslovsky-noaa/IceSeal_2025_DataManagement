@@ -1,0 +1,16 @@
+SELECT flight, camera_view, image_name, bound_left, bound_top, bound_right, bound_bottom, detection_file, detection
+FROM surv_ice_seals_2025.tbl_detections_processed_ir
+WHERE flight > 'fl200'
+AND detection_type = 'off_frame'
+AND (bound_bottom < 25 OR bound_top > 475);
+
+--For tracking off_frame updates
+SELECT flight, camera_view, processing_completed_by
+FROM annotations.tbl_detector_meta m
+LEFT JOIN annotations.tbl_detector_processing p
+ON m.id = p.detector_meta_id
+WHERE project_schema = 'surv_ice_seals_2025'
+AND flight > 'fl200'
+AND processing_started_date <= '2026-03-26'
+AND processing_step_lku = 22
+ORDER BY flight, camera_view
