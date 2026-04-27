@@ -1,0 +1,6 @@
+SELECT flight, camera_view, random_order, COUNT(flight)
+FROM annotations.tbl_detector_meta
+INNER JOIN surv_ice_seals_2025.tbl_detections_processed_ir USING (flight, camera_view)
+WHERE detection_type LIKE '%animal%' AND flight > 'fl200'
+GROUP BY flight, camera_view, random_order
+ORDER BY random_order
