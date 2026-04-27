@@ -1,0 +1,22 @@
+SELECT DISTINCT flight, camera_view
+FROM surv_ice_seals_2025.tbl_detections_processed_ir
+WHERE flight > 'fl200'
+ORDER BY flight, camera_view;
+
+SELECT DISTINCT detection_type
+FROM surv_ice_seals_2025.tbl_detections_processed_ir
+WHERE flight > 'fl200'
+ORDER BY detection_type;
+
+SELECT flight, camera_view
+FROM surv_ice_seals_2025.tbl_detections_processed_ir
+WHERE flight > 'fl200'
+AND detection_type = 'new_animal'
+ORDER BY flight, camera_view;
+
+SELECT flight, camera_view, COUNT(flight) AS num_detections
+FROM surv_ice_seals_2025.tbl_detections_processed_ir
+WHERE flight > 'fl200'
+AND detection_type LIKE '%animal%'
+GROUP BY flight, camera_view
+ORDER BY flight, camera_view
