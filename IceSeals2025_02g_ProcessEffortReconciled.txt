@@ -69,3 +69,8 @@ WHERE (m.flight = 'fl111' AND m.dt >= '20250419_234025.635426' AND m.dt <= '2025
 UPDATE surv_ice_seals_2025.geo_images_meta m
 SET effort_reconciled = 'ON_SAMPLE'
 WHERE (m.flight = 'fl111' AND m.dt >= '20250419_205819.545790' AND m.dt <= '20250419_211231.988872');
+
+--Update effort to change BEAR to OFF based on EEM and CLC feedback
+UPDATE surv_ice_seals_2025.geo_images_meta m
+SET effort_reconciled = 'OFF'
+WHERE (m.flight = 'fl207' AND m.dt >= '20250419_002515.997546' AND m.dt <= '20250419_003102.433968');
