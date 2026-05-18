@@ -1,3 +1,9 @@
+--Incorrect file name format
+SELECT flight, camera_view, processing_completed_by, rgb_processed_csv FROM annotations.summ_who_did_what
+WHERE project_schema = 'surv_ice_seals_2025'
+AND processing_step = 'Species ID (RGB)'
+AND rgb_processed_csv NOT LIKE '%rgb_irDetectionsTransposed_processed.csv';
+
 --RGB processed not in IR processed
 SELECT flight, camera_view, COUNT(id) AS num_missing
 FROM surv_ice_seals_2025.tbl_detections_processed_rgb
