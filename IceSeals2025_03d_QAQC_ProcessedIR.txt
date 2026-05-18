@@ -1,3 +1,9 @@
+--Incorrect file name format
+SELECT flight, camera_view, processing_completed_by, ir_processed_csv FROM annotations.summ_who_did_what
+WHERE project_schema = 'surv_ice_seals_2025'
+AND processing_step = 'Detection validation (IR)'
+AND ir_processed_csv NOT LIKE '%ir_detections_validated.csv';
+
 SELECT DISTINCT flight, camera_view
 FROM surv_ice_seals_2025.tbl_detections_processed_ir
 WHERE flight > 'fl200'
@@ -19,4 +25,26 @@ FROM surv_ice_seals_2025.tbl_detections_processed_ir
 WHERE flight > 'fl200'
 AND detection_type LIKE '%animal%'
 GROUP BY flight, camera_view
-ORDER BY flight, camera_view
+ORDER BY flight, camera_view;
+
+--For identifying possible animal_new
+SELECT q.*, processing_completed_by
+FROM 
+(SELECT id, flight, camera_view, image_name, detection, processed_detection_id, detection_type, bound_top, bound_bottom, bound_left, bound_right, 
+	AVG (bound_top + bound_bottom) / 2 AS bound_x_avg, AVG (bound_left + bound_right) / 2 AS bound_y_avg, max_detection
+	FROM surv_ice_seals_2025.tbl_detections_processed_ir
+	INNER JOIN (SELECT flight, camera_view, max(detection) AS max_detection FROM surv_ice_seals_2025.tbl_detections_original_ir GROUP BY flight, camera_view ORDER BY flight, camera_view) a USING (flight, camera_view)
+	WHERE detection_type = 'animal'
+	AND detection > max_detection
+	GROUP BY id, flight, camera_view, image_name, detection, processed_detection_id, detection_type, max_detection, bound_top, bound_bottom, bound_left, bound_right
+	ORDER BY id, flight, camera_view, image_name, detection) q
+INNER JOIN annotations.summ_who_did_what w USING (flight, camera_view)
+LEFT JOIN surv_ice_seals_2025.tbl_detections_original_ir o 
+ON q.image_name = o.image_name
+AND box(point(q.bound_left, q.bound_bottom), point(q.bound_right, q.bound_top)) 
+   && box(point(o.bound_left, o.bound_bottom), point(o.bound_right, o.bound_top))
+WHERE processing_step = 'Detection validation (IR)'
+AND o.image_name IS NULL
+ORDER BY q.flight, q.camera_view, q.image_name, q.detection;
+
+
