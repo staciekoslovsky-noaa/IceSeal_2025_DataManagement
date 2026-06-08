@@ -1,30 +1,44 @@
+--Check all files imported
+SELECT DISTINCT flight, camera_view
+FROM surv_ice_seals_2025.tbl_detections_processed_ir
+WHERE flight > 'fl200'
+ORDER BY flight, camera_view;
+
 --Incorrect file name format
 SELECT flight, camera_view, processing_completed_by, ir_processed_csv FROM annotations.summ_who_did_what
 WHERE project_schema = 'surv_ice_seals_2025'
 AND processing_step = 'Detection validation (IR)'
 AND ir_processed_csv NOT LIKE '%ir_detections_validated.csv';
 
-SELECT DISTINCT flight, camera_view
-FROM surv_ice_seals_2025.tbl_detections_processed_ir
-WHERE flight > 'fl200'
-ORDER BY flight, camera_view;
-
+--Check detection types in IR data
 SELECT DISTINCT detection_type
 FROM surv_ice_seals_2025.tbl_detections_processed_ir
-WHERE flight > 'fl200'
+--WHERE flight > 'fl200'
 ORDER BY detection_type;
 
+----Get detections where bad detection_type
 SELECT flight, camera_view
 FROM surv_ice_seals_2025.tbl_detections_processed_ir
-WHERE flight > 'fl200'
-AND detection_type = 'new_animal'
+WHERE --flight > 'fl200'
+detection_type = 'new_animal'
 ORDER BY flight, camera_view;
 
+--Check number of animals per flight, camera_view
 SELECT flight, camera_view, COUNT(flight) AS num_detections
 FROM surv_ice_seals_2025.tbl_detections_processed_ir
-WHERE flight > 'fl200'
-AND detection_type LIKE '%animal%'
+WHERE --flight > 'fl200'
+detection_type LIKE '%animal%'
 GROUP BY flight, camera_view
+ORDER BY flight, camera_view;
+
+--Check for off-frame IR data (18 records currently affected)
+SELECT flight, camera_view, detection, image_name, detection_type, bound_top, bound_bottom, bound_left, bound_right
+FROM surv_ice_seals_2025.tbl_detections_processed_ir
+WHERE (bound_bottom < 0 
+OR bound_top > 512
+OR bound_right < 0
+OR bound_left > 640)
+AND detection_type <> 'animal_off_ir'
 ORDER BY flight, camera_view;
 
 --For identifying possible animal_new

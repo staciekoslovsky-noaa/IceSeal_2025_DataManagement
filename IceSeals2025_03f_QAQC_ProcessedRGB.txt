@@ -1,8 +1,15 @@
+--Check all files imported
+SELECT DISTINCT flight, camera_view
+FROM surv_ice_seals_2025.tbl_detections_processed_rgb
+WHERE flight > 'fl200'
+ORDER BY flight, camera_view;
+
 --Incorrect file name format
 SELECT flight, camera_view, processing_completed_by, rgb_processed_csv FROM annotations.summ_who_did_what
 WHERE project_schema = 'surv_ice_seals_2025'
 AND processing_step = 'Species ID (RGB)'
-AND rgb_processed_csv NOT LIKE '%rgb_irDetectionsTransposed_processed.csv';
+AND rgb_processed_csv NOT LIKE '%rgb_irDetectionsTransposed_processed.csv'
+ORDER BY flight, camera_view;
 
 --RGB processed not in IR processed
 SELECT flight, camera_view, COUNT(id) AS num_missing
@@ -15,6 +22,8 @@ ORDER BY flight, camera_view;
 SELECT flight, camera_view, COUNT(id) AS num_missing
 FROM surv_ice_seals_2025.tbl_detections_processed_ir
 WHERE processed_detection_id NOT IN (SELECT processed_detection_id FROM surv_ice_seals_2025.tbl_detections_processed_rgb)
+AND (flight, camera_view) IN (SELECT flight, camera_view FROM annotations.summ_who_did_what 
+							WHERE project_schema = 'surv_ice_seals_2025' AND processing_step = 'Species ID (RGB)' AND processing_completed_by IS NOT NULL)
 GROUP BY flight, camera_view
 ORDER BY flight, camera_view;
 
@@ -29,9 +38,11 @@ SELECT DISTINCT detection_type
 FROM surv_ice_seals_2025.tbl_detections_processed_rgb
 ORDER BY detection_type;
 
-SELECT *
+SELECT DISTINCT flight, camera_view, detection_type, processing_completed_by
 FROM surv_ice_seals_2025.tbl_detections_processed_rgb
-WHERE detection_type = 'no_rgb';
+INNER JOIN annotations.summ_who_did_what USING (flight, camera_view)
+WHERE detection_type = 'off_ir'
+AND project_schema = 'surv_ice_seals_2025' AND processing_step = 'Species ID (RGB)';
 
 --Check for missing data
 SELECT *
@@ -42,29 +53,87 @@ OR age_class IS NULL
 OR age_class_confidence IS NULL
 ORDER BY flight, camera_view;
 
---Check for off-frame IR data (18 records currently affected)
-FROM surv_ice_seals_2025.tbl_detections_processed_ir
-WHERE (bound_bottom < 0 
-OR bound_top > 512
-OR bound_right < 0
-OR bound_left > 640)
-AND detection_type <> 'off_ir'
-ORDER BY flight, camera_view;
-
 --Check for off-frame RGB data
-SELECT *
+SELECT flight, camera_view, detection, image_name, detection_type, processing_completed_by
 FROM surv_ice_seals_2025.tbl_detections_processed_rgb
+INNER JOIN annotations.summ_who_did_what USING (flight, camera_view)
 WHERE (bound_bottom < 0 
 OR bound_top > 9564
 OR bound_right < 0
 OR bound_left > 12768)
 AND detection_type <> 'false_positive' 
 AND detection_type <> 'off_frame'
+AND project_schema = 'surv_ice_seals_2025' AND processing_step = 'Species ID (RGB)'
 ORDER BY flight, camera_view;
 
 --Check for detection_type when IR detection is 'animal_off_ir' (these should all have species)
-SELECT r.*
+SELECT DISTINCT r.detection_type
 FROM surv_ice_seals_2025.tbl_detections_processed_rgb r
 INNER JOIN surv_ice_seals_2025.tbl_detections_processed_ir i USING (processed_detection_id)
-WHERE i.detection_type = 'animal_off_ir'
-ORDER BY flight, camera_view;
+WHERE i.detection_type = 'animal_off_ir';
+
+--Illogical species ID
+--animals
+SELECT r.flight, r.camera_view, r.detection, i.detection_type as ir_detection, r.detection_type as rgb_detection, processing_completed_by
+FROM surv_ice_seals_2025.tbl_detections_processed_rgb r
+INNER JOIN annotations.summ_who_did_what USING (flight, camera_view)
+INNER JOIN surv_ice_seals_2025.tbl_detections_processed_ir i USING (processed_detection_id)
+WHERE i.detection_type LIKE '%animal%'
+AND r.detection_type NOT LIKE '%seal%'
+AND r.detection_type NOT LIKE '%bird%'
+AND r.detection_type NOT LIKE '%walrus%'
+AND r.detection_type NOT LIKE '%animal%'
+AND r.detection_type NOT LIKE '%fox%'
+AND r.detection_type NOT LIKE '%caribou%'
+AND r.detection_type NOT LIKE '%bear%'
+AND project_schema = 'surv_ice_seals_2025' AND processing_step = 'Species ID (RGB)'
+ORDER BY i.detection_type, r.detection_type;
+
+--humans
+SELECT r.flight, r.camera_view, r.detection, i.detection_type as ir_detection, r.detection_type as rgb_detection, processing_completed_by
+FROM surv_ice_seals_2025.tbl_detections_processed_rgb r
+INNER JOIN annotations.summ_who_did_what USING (flight, camera_view)
+INNER JOIN surv_ice_seals_2025.tbl_detections_processed_ir i USING (processed_detection_id)
+WHERE i.detection_type LIKE '%human%'
+AND r.detection_type NOT LIKE '%human%'
+AND project_schema = 'surv_ice_seals_2025' AND processing_step = 'Species ID (RGB)' 
+ORDER BY i.detection_type, r.detection_type;
+
+SELECT r.flight, r.camera_view, r.detection, i.detection_type as ir_detection, r.detection_type as rgb_detection, processing_completed_by
+FROM surv_ice_seals_2025.tbl_detections_processed_rgb r
+INNER JOIN annotations.summ_who_did_what USING (flight, camera_view)
+INNER JOIN surv_ice_seals_2025.tbl_detections_processed_ir i USING (processed_detection_id)
+WHERE i.detection_type NOT LIKE '%human%'
+AND r.detection_type LIKE '%human%'
+AND project_schema = 'surv_ice_seals_2025' AND processing_step = 'Species ID (RGB)' 
+ORDER BY i.detection_type, r.detection_type;
+
+--extra_detection
+SELECT r.flight, r.camera_view, r.detection, i.detection_type as ir_detection, r.detection_type as rgb_detection, processing_completed_by
+FROM surv_ice_seals_2025.tbl_detections_processed_rgb r
+INNER JOIN annotations.summ_who_did_what USING (flight, camera_view)
+INNER JOIN surv_ice_seals_2025.tbl_detections_processed_ir i USING (processed_detection_id)
+WHERE i.detection_type = 'extra_detection'
+AND r.detection_type <> 'extra_detection'
+AND project_schema = 'surv_ice_seals_2025' AND processing_step = 'Species ID (RGB)'
+ORDER BY i.detection_type, r.detection_type;
+
+--off_frame
+SELECT r.flight, r.camera_view, r.detection, i.detection_type as ir_detection, r.detection_type as rgb_detection, processing_completed_by
+FROM surv_ice_seals_2025.tbl_detections_processed_rgb r
+INNER JOIN annotations.summ_who_did_what USING (flight, camera_view)
+INNER JOIN surv_ice_seals_2025.tbl_detections_processed_ir i USING (processed_detection_id)
+WHERE i.detection_type = 'off_frame'
+AND r.detection_type <> 'off_frame'
+AND project_schema = 'surv_ice_seals_2025' AND processing_step = 'Species ID (RGB)'
+ORDER BY i.detection_type, r.detection_type;
+
+--false_positive
+SELECT r.flight, r.camera_view, r.detection, i.detection_type as ir_detection, r.detection_type as rgb_detection, processing_completed_by
+FROM surv_ice_seals_2025.tbl_detections_processed_rgb r
+INNER JOIN annotations.summ_who_did_what USING (flight, camera_view)
+INNER JOIN surv_ice_seals_2025.tbl_detections_processed_ir i USING (processed_detection_id)
+WHERE i.detection_type = 'false_positive'
+AND r.detection_type <> 'false_positive'
+AND project_schema = 'surv_ice_seals_2025' AND processing_step = 'Species ID (RGB)'
+ORDER BY i.detection_type, r.detection_type;
