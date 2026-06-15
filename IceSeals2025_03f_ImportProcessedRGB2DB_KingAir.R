@@ -1,4 +1,4 @@
-# Ice Seals 2025: Import processed thermal detections to DB (Twin Otter)
+# Ice Seals 2025: Import processed color detections to DB (King Air)
 
 # Install libraries
 library(tidyverse)
