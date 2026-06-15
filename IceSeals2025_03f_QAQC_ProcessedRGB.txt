@@ -53,6 +53,28 @@ OR age_class IS NULL
 OR age_class_confidence IS NULL
 ORDER BY flight, camera_view;
 
+SELECT flight, camera_view, image_name, detection_type, species_confidence, age_class, age_class_confidence, processing_completed_by
+FROM surv_ice_seals_2025.tbl_detections_processed_rgb
+INNER JOIN annotations.summ_who_did_what USING (flight, camera_view)
+WHERE (detection_type IS NULL OR detection_type = 'NA'
+OR species_confidence IS NULL OR species_confidence = 'NA'
+OR age_class IS NULL OR age_class = 'NA'
+OR age_class_confidence IS NULL OR age_class_confidence = 'NA')
+AND detection_type <> 'false_positive'
+AND detection_type <> 'off_frame'
+AND detection_type <> 'extra_detection'
+AND detection_type <> 'not_discernible'
+AND detection_type <> 'no_rgb'
+AND detection_type <> 'bird'
+AND detection_type <> 'human'
+AND detection_type <> 'caribou'
+AND detection_type NOT LIKE 'walrus%'
+AND detection_type NOT LIKE 'dead%'
+AND detection_type NOT LIKE 'unknown%'
+AND detection_type <> 'fox'
+AND project_schema = 'surv_ice_seals_2025' AND processing_step = 'Species ID (RGB)'
+ORDER BY flight, camera_view;
+
 --Check for off-frame RGB data
 SELECT flight, camera_view, detection, image_name, detection_type, processing_completed_by
 FROM surv_ice_seals_2025.tbl_detections_processed_rgb
