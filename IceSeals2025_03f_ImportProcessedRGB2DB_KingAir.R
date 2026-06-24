@@ -47,7 +47,10 @@ for (i in 1:nrow(folders)) {
   }
 
   files <- list.files(folders$folder_path[i])
-  rgb_validated <- files[grepl('_rgb_irDetectionsTransposed_processed', files)]
+  rgb_validated <- files[grepl(
+    '_rgb_irDetectionsTransposed_processed.csv',
+    files
+  )]
   if (length(rgb_validated) == 0) {
     next
   }
