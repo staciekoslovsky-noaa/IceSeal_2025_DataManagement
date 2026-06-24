@@ -1,0 +1,24 @@
+WITH avg_loc AS 
+(SELECT flight, avg(ins_latitude) AS avg_lat, avg(ins_longitude) AS avg_long
+FROM surv_ice_seals_2025.geo_images_meta
+GROUP BY flight),
+
+sea AS
+(SELECT flight, avg_lat, avg_long, 
+	CASE WHEN avg_lat < 66 THEN 'bering'
+	WHEN avg_lat > 66 AND avg_long <-155 THEN 'chukchi'
+	WHEN avg_lat > 66 AND avg_long >-155 THEN 'beaufort' END AS sea
+FROM avg_loc),
+
+seal AS (SELECT r.flight, r.camera_view, i.detection_type AS detection_type_ir, r.detection_type, r.age_class, r.processed_detection_id, sea
+FROM surv_ice_seals_2025.tbl_detections_processed_rgb r
+INNER JOIN sea USING (flight)
+INNER JOIN surv_ice_seals_2025.tbl_detections_processed_ir i USING (processed_detection_id)
+WHERE r.detection_type LIKE '%seal%'
+AND r.detection_type NOT LIKE '%unknown%' AND r.detection_type NOT LIKE '%dead%' AND r.detection_type NOT LIKE '%water%'
+AND r.age_class <> 'NA'
+AND i.detection_type <> 'animal_duplicate')
+
+SELECT sea, detection_type, COUNT(detection_type)
+FROM seal
+GROUP BY sea, detection_type
