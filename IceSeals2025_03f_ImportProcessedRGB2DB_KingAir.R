@@ -108,7 +108,11 @@ for (i in 1:nrow(folders)) {
           ifelse(
             grepl("^species_confidence", att3),
             gsub("species_confidence *", "", att3),
-            "NA"
+            ifelse(
+              grepl("^species_confidence", att4),
+              gsub("species_confidence *", "", att4),
+              "NA"
+            )
           )
         )
       )
@@ -123,7 +127,11 @@ for (i in 1:nrow(folders)) {
           ifelse(
             grepl("^age_class[[:space:]]", att3),
             gsub("age_class *", "", att3),
-            "NA"
+            ifelse(
+              grepl("^age_class[[:space:]]", att4),
+              gsub("age_class *", "", att4),
+              "NA"
+            )
           )
         )
       )
@@ -138,7 +146,11 @@ for (i in 1:nrow(folders)) {
           ifelse(
             grepl("^age_class_confidence", att3),
             gsub("age_class_confidence *", "", att3),
-            "NA"
+            ifelse(
+              grepl("^age_class_confidence", att4),
+              gsub("age_class_confidence *", "", att4),
+              "NA"
+            )
           )
         )
       )
@@ -150,7 +162,15 @@ for (i in 1:nrow(folders)) {
         ifelse(
           grepl("^flag", att2),
           gsub("flag *", "", att2),
-          ifelse(grepl("^flag", att3), gsub("flag *", "", att3), "NA")
+          ifelse(
+            grepl("^flag", att3),
+            gsub("flag *", "", att3),
+            ifelse(
+              grepl("^flag", att4),
+              gsub("flag *", "", att4),
+              "NA"
+            )
+          )
         )
       )
     ) %>%
