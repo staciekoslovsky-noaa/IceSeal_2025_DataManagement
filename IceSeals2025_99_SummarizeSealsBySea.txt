@@ -14,11 +14,15 @@ seal AS (SELECT r.flight, r.camera_view, i.detection_type AS detection_type_ir, 
 FROM surv_ice_seals_2025.tbl_detections_processed_rgb r
 INNER JOIN sea USING (flight)
 INNER JOIN surv_ice_seals_2025.tbl_detections_processed_ir i USING (processed_detection_id)
-WHERE r.detection_type LIKE '%seal%'
-AND r.detection_type NOT LIKE '%unknown%' AND r.detection_type NOT LIKE '%dead%' AND r.detection_type NOT LIKE '%water%'
-AND r.age_class <> 'NA'
-AND i.detection_type <> 'animal_duplicate')
-
+WHERE --r.detection_type LIKE '%seal%'
+--AND r.detection_type NOT LIKE '%unknown%' AND r.detection_type NOT LIKE '%dead%' AND r.detection_type NOT LIKE '%water%'
+--AND r.age_class <> 'NA'
+i.detection_type <> 'animal_duplicate'
+AND i.detection_type <> 'extra_detection'
+AND i.detection_type <> 'off_frame'
+AND i.detection_type <> 'false_positive'
+AND r.detection_type <> 'not_discernible'
+AND r.detection_type <> 'no_rgb')
 SELECT sea, detection_type, COUNT(detection_type)
 FROM seal
 GROUP BY sea, detection_type
