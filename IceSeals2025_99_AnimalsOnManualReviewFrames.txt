@@ -1,6 +1,6 @@
 SELECT pr.processed_detection_id, pr.image_name as rgb_image_name, pr.bound_top, pr.bound_bottom, pr.bound_left, pr.bound_right, pr.detection_type, pr.age_class, oi.score as ir_model_score
 FROM surv_ice_seals_2025.tbl_detections_processed_rgb pr
 INNER JOIN surv_ice_seals_2025.tbl_detections_processed_ir pi USING (processed_detection_id)
-INNER JOIN surv_ice_seals_2025.tbl_detections_original_ir oi USING (processed_detection_id)
+LEFT JOIN surv_ice_seals_2025.tbl_detections_original_ir oi USING (processed_detection_id)
 WHERE pi.detection_type LIKE '%animal%'
 AND pr.image_name IN (SELECT image_name FROM surv_ice_seals_2025.tbl_images WHERE rgb_manualreview = 'Y' AND image_type = 'rgb_image')
