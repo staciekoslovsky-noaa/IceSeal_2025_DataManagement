@@ -1,14 +1,18 @@
 UPDATE surv_ice_seals_2025.geo_images_meta m
 SET effort_reconciled = effort_field;
 
---Correct effort when there are altitude issues????
-
 --Correct effort when IR NUC
 UPDATE surv_ice_seals_2025.geo_images_meta m
 SET effort_reconciled = 'OFF'
 FROM surv_ice_seals_2025.tbl_images i
 WHERE m.flight = i.flight AND m.camera_view = i.camera_view AND m.dt = i.dt
 AND i.ir_nuc = 'Y';
+
+--Change effort for fl101-107 where we are unable to use the data
+UPDATE surv_ice_seals_2025.geo_images_meta
+SET effort_reconciled = 'OFF'
+WHERE flight > 'fl100'
+AND flight <= 'fl107';
 
 --Assign effort based on roll values
 UPDATE surv_ice_seals_2025.geo_images_meta
