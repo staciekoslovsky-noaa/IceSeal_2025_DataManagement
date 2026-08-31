@@ -1,0 +1,72 @@
+CREATE OR REPLACE VIEW surv_ice_seals_2025.geo_4abundance_images
+AS
+SELECT row_number() OVER (ORDER BY flight, camera_view, f.image_name) AS id,
+    flight,
+    camera_view,
+    f.image_name,
+    dt,
+    m.effort_reconciled,
+    m.ins_altitude,
+    st_transform(f.geom, 3338) AS geom
+FROM surv_ice_seals_2025.geo_images_meta m
+LEFT JOIN surv_ice_seals_2025.geo_images_footprint f USING (flight, camera_view, dt)
+WHERE m.effort_reconciled::text LIKE 'ON%'::text AND f.image_type = 'rgb_image'::text;
+  
+
+  
+  
+CREATE OR REPLACE VIEW surv_ice_seals_2025.geo_4abundance_seals
+AS
+SELECT row_number() OVER (ORDER BY i.flight, i.camera_view, d.image_name) AS id,
+    i.flight,
+    i.camera_view,
+    d.image_name,
+    i.dt,
+    d.processed_detection_id AS detection_id,
+    t.detection_type AS ir_classification,
+    d.detection_type AS species,
+    d.species_confidence,
+    d.age_class,
+    d.age_class_confidence,
+    st_transform(st_centroid(f.geom), 3338) AS image_geom
+FROM surv_ice_seals_2025.tbl_detections_processed_rgb d
+     LEFT JOIN surv_ice_seals_2025.tbl_detections_processed_ir t USING (processed_detection_id)
+     LEFT JOIN surv_ice_seals_2025.tbl_images i ON i.image_name::text = d.image_name::text
+     LEFT JOIN surv_ice_seals_2025.geo_images_meta m ON i.flight::text = m.flight::text AND i.camera_view::text = m.camera_view::text AND i.dt::text = m.dt::text
+     LEFT JOIN surv_ice_seals_2025.geo_images_footprint f ON i.image_name::text = f.image_name
+WHERE m.effort_reconciled::text LIKE 'ON%'::text 
+AND d.detection_type::text ~~ '%seal'::text 
+AND (t.detection_type::text = 'animal'::text OR t.detection_type::text = 'animal_prev_rgb'::text);
+
+  
+  
+  
+  
+  
+--NOT CREATED YET!
+ CREATE OR REPLACE VIEW surv_ice_seals_2025.geo_4abundance_polarbears
+ AS
+ SELECT row_number() OVER (ORDER BY i.flight, i.camera_view, d.image_name) AS id,
+    i.flight,
+    i.camera_view,
+    d.image_name,
+    i.dt,
+    m.effort_reconciled,
+    d.detection_id,
+    t.detection_type AS ir_classification,
+    d.detection_type AS species,
+    d.species_confidence,
+    d.age_class,
+    d.age_class_confidence,
+    d.alt_species,
+    d.alt_species_confidence,
+    d.alt_age_class,
+    d.alt_age_class_confidence,
+    st_transform(st_centroid(f.geom), 3338) AS image_geom,
+    d.bear_id
+   FROM surv_ice_seals_2025.tbl_detections_processed_rgb d
+     LEFT JOIN surv_ice_seals_2025.tbl_detections_processed_ir t USING (detection_id)
+     LEFT JOIN surv_ice_seals_2025.tbl_images i ON i.image_name::text = d.image_name::text
+     LEFT JOIN surv_ice_seals_2025.geo_images_meta m ON i.flight::text = m.flight::text AND i.camera_view::text = m.camera_view::text AND i.dt::text = m.dt::text
+     LEFT JOIN surv_ice_seals_2025.geo_images_footprint f ON i.image_name::text = f.image_name
+  WHERE d.detection_type::text ~~ '%bear'::text AND (t.detection_type::text = 'animal'::text OR t.detection_type::text = 'animal_new'::text);
